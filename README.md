@@ -13,10 +13,10 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
-if LocalPlayer.PlayerGui:FindFirstChild("CyberMochila_V18") then LocalPlayer.PlayerGui.CyberMochila_V18:Destroy() end
+if LocalPlayer.PlayerGui:FindFirstChild("CyberMochila_V20") then LocalPlayer.PlayerGui.CyberMochila_V20:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CyberMochila_V18"
+ScreenGui.Name = "CyberMochila_V20"
 ScreenGui.Parent = LocalPlayer.PlayerGui
 ScreenGui.ResetOnSpawn = false
 
@@ -40,7 +40,7 @@ Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -70, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
-Title.Text = "CYBER V18 - HEAD OFFSET"
+Title.Text = "CYBER V20 - BACK ADJUSTED"
 Title.TextColor3 = Cores.Destaque
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 12
@@ -135,7 +135,7 @@ btnHead.MouseButton1Click:Connect(function() setMode("Head", btnHead) end)
 btnBackF.MouseButton1Click:Connect(function() setMode("BackFront", btnBackF) end)
 btnBackT.MouseButton1Click:Connect(function() setMode("BackBack", btnBackT) end)
 
--- UI LOGIC
+-- UI ACTIONS (Arraste e Minimização)
 MinBtn.MouseButton1Click:Connect(function()
     Minimized = not Minimized
     Content.Visible = not Minimized
@@ -153,7 +153,7 @@ local SearchBox = Instance.new("TextBox")
 SearchBox.Size = UDim2.new(0.9, 0, 0, 30)
 SearchBox.Position = UDim2.new(0.05, 0, 0.22, 0)
 SearchBox.BackgroundColor3 = Cores.Input
-SearchBox.PlaceholderText = "Nick..."
+SearchBox.PlaceholderText = "Nick do Alvo..."
 SearchBox.TextColor3 = Cores.Texto
 SearchBox.Parent = Content
 Instance.new("UICorner", SearchBox)
@@ -207,8 +207,8 @@ end
 SearchBox:GetPropertyChangedSignal("Text"):Connect(function() updateList(SearchBox.Text) end)
 updateList("")
 
--- PHYSICS LOOP
-RunService.Stepped:Connect(function()
+-- ZERO DELAY LOGIC (RenderStepped)
+RunService:BindToRenderStep("CyberFollow", Enum.RenderPriority.Camera.Value + 1, function()
     if IsFollowing and SelectedPlayer and SelectedPlayer.Character then
         local myChar = LocalPlayer.Character
         local targetChar = SelectedPlayer.Character
@@ -217,24 +217,24 @@ RunService.Stepped:Connect(function()
         local tTorso = targetChar:FindFirstChild("UpperTorso") or targetChar:FindFirstChild("Torso")
         local tHead = targetChar:FindFirstChild("Head")
 
-        if myRoot and (tTorso or tHead) then
-            for _, p in pairs(myChar:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+        if myRoot and myHum and (tTorso or tHead) then
             myRoot.Velocity = Vector3.new(0,0,0)
-            if myHum then myHum.Sit = ForceSit end
-
+            for _, p in pairs(myChar:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+            
+            myHum.Sit = ForceSit
+            
+            local finalCFrame
             if CurrentMode == "Head" and tHead then
-                -- AJUSTADO: X=0 (Centro), Y=1.5 (Mais alto), Z=0.5 (Para trás)
-                myRoot.CFrame = tHead.CFrame * CFrame.new(0, 1.5, 0.5)
+                finalCFrame = tHead.CFrame * CFrame.new(0, 1.5, 0.5)
             elseif CurrentMode == "BackFront" and tTorso then
-                myRoot.CFrame = tTorso.CFrame * CFrame.new(0, 0.5, 0.7)
+                finalCFrame = tTorso.CFrame * CFrame.new(0, 0.2, 0.7)
             elseif CurrentMode == "BackBack" and tTorso then
-                myRoot.CFrame = tTorso.CFrame * CFrame.new(0, 0.5, 0.7) * CFrame.Angles(0, math.rad(180), 0)
+                -- AJUSTADO: Y=0.1 (Mais baixo), Z=0.6 (Mais perto das costas)
+                finalCFrame = tTorso.CFrame * CFrame.new(0, 0.1, 0.6) * CFrame.Angles(0, math.rad(180), 0)
             end
+            
+            if finalCFrame then myRoot.CFrame = finalCFrame end
         end
-    elseif IsFollowing and (not SelectedPlayer or not SelectedPlayer.Parent) then
-        IsFollowing = false
-        ActionBtn.Text = "ALVO SAIU"
-        ActionBtn.BackgroundColor3 = Cores.BotaoOff
     end
 end)
 

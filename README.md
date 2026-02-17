@@ -13,16 +13,16 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
-if LocalPlayer.PlayerGui:FindFirstChild("CyberMochila_V13") then LocalPlayer.PlayerGui.CyberMochila_V13:Destroy() end
+if LocalPlayer.PlayerGui:FindFirstChild("CyberMochila_V15") then LocalPlayer.PlayerGui.CyberMochila_V15:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CyberMochila_V13"
+ScreenGui.Name = "CyberMochila_V15"
 ScreenGui.Parent = LocalPlayer.PlayerGui
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 260, 0, 360)
-MainFrame.Position = UDim2.new(0.5, -130, 0.5, -180)
+MainFrame.Position = UDim2.new(0.5, -130, 0.5, -175)
 MainFrame.BackgroundColor3 = Cores.Fundo
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -30,7 +30,7 @@ MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
--- BARRA DE TOPO
+-- HEADER
 local Header = Instance.new("Frame")
 Header.Size = UDim2.new(1, 0, 0, 40)
 Header.BackgroundColor3 = Cores.Topo
@@ -40,7 +40,7 @@ Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 12)
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -70, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
-Title.Text = "CYBERNODRY HUB"
+Title.Text = "CYBER V15 - ANTI-VOID"
 Title.TextColor3 = Cores.Destaque
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 12
@@ -55,7 +55,6 @@ CloseBtn.Text = "×"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
 CloseBtn.BackgroundTransparency = 1
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 20
 CloseBtn.Parent = Header
 
 local MinBtn = Instance.new("TextButton")
@@ -65,17 +64,14 @@ MinBtn.Text = "−"
 MinBtn.TextColor3 = Cores.Texto
 MinBtn.BackgroundTransparency = 1
 MinBtn.Font = Enum.Font.GothamBold
-MinBtn.TextSize = 20
 MinBtn.Parent = Header
 
--- CONTAINER DE CONTEÚDO (Tudo aqui dentro some ao minimizar)
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1, 0, 1, -40)
 Content.Position = UDim2.new(0, 0, 0, 40)
 Content.BackgroundTransparency = 1
 Content.Parent = MainFrame
 
--- ASSINATURA (Agora dentro do Content para minimizar junto)
 local Signature = Instance.new("TextLabel")
 Signature.Size = UDim2.new(0, 100, 0, 20)
 Signature.Position = UDim2.new(1, -105, 1, -20)
@@ -84,7 +80,6 @@ Signature.TextColor3 = Color3.fromRGB(80, 80, 80)
 Signature.Font = Enum.Font.Code
 Signature.TextSize = 11
 Signature.BackgroundTransparency = 1
-Signature.TextXAlignment = Enum.TextXAlignment.Right
 Signature.Parent = Content
 
 -- BOTÕES DE MODO
@@ -113,31 +108,53 @@ local btnBackF = createModeBtn("MOCHILA (F)", UDim2.new(0.345, 0, 0, 0))
 local btnBackT = createModeBtn("MOCHILA (T)", UDim2.new(0.69, 0, 0, 0))
 btnHead.BackgroundColor3 = Cores.BotaoOn
 
--- LÓGICA DE MINIMIZAR
+-- CONTROLE
+local SelectedPlayer = nil
+local IsFollowing = false
+local CurrentMode = "Head"
 local Minimized = false
+
+local function stopAnims()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("Humanoid") then
+        for _, anim in pairs(char.Humanoid:GetPlayingAnimationTracks()) do anim:Stop() end
+    end
+end
+
+-- INTERFACE
+local function setMode(mode, btn)
+    CurrentMode = mode
+    btnHead.BackgroundColor3 = Cores.BotaoOff
+    btnBackF.BackgroundColor3 = Cores.BotaoOff
+    btnBackT.BackgroundColor3 = Cores.BotaoOff
+    btn.BackgroundColor3 = Cores.BotaoOn
+end
+
+btnHead.MouseButton1Click:Connect(function() setMode("Head", btnHead) end)
+btnBackF.MouseButton1Click:Connect(function() setMode("BackFront", btnBackF) end)
+btnBackT.MouseButton1Click:Connect(function() setMode("BackBack", btnBackT) end)
+
 MinBtn.MouseButton1Click:Connect(function()
     Minimized = not Minimized
     Content.Visible = not Minimized
     MainFrame:TweenSize(Minimized and UDim2.new(0, 260, 0, 40) or UDim2.new(0, 260, 0, 360), "Out", "Quad", 0.3, true)
     MinBtn.Text = Minimized and "+" or "−"
 end)
-
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- SISTEMA DE ARRASTE
+-- ARRASTE
 local dragging, dragStart, startPos
 Header.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true dragStart = i.Position startPos = MainFrame.Position end end)
 UserInputService.InputChanged:Connect(function(i) if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then local d = i.Position - dragStart MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y) end end)
 UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 
--- PESQUISA E LISTA
+-- LISTA
 local SearchBox = Instance.new("TextBox")
 SearchBox.Size = UDim2.new(0.9, 0, 0, 30)
 SearchBox.Position = UDim2.new(0.05, 0, 0.15, 0)
 SearchBox.BackgroundColor3 = Cores.Input
-SearchBox.PlaceholderText = "Nick do jogador..."
+SearchBox.PlaceholderText = "Nick..."
 SearchBox.TextColor3 = Cores.Texto
-SearchBox.Font = Enum.Font.Gotham
 SearchBox.Parent = Content
 Instance.new("UICorner", SearchBox)
 
@@ -145,8 +162,6 @@ local Scroll = Instance.new("ScrollingFrame")
 Scroll.Size = UDim2.new(0.9, 0, 0, 120)
 Scroll.Position = UDim2.new(0.05, 0, 0.28, 0)
 Scroll.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Scroll.BorderSizePixel = 0
-Scroll.ScrollBarThickness = 2
 Scroll.Parent = Content
 Instance.new("UIListLayout", Scroll).Padding = UDim.new(0, 5)
 
@@ -159,23 +174,6 @@ ActionBtn.TextColor3 = Cores.Texto
 ActionBtn.Font = Enum.Font.GothamBold
 ActionBtn.Parent = Content
 Instance.new("UICorner", ActionBtn)
-
--- FUNCIONALIDADES
-local SelectedPlayer = nil
-local IsFollowing = false
-local CurrentMode = "Head"
-
-local function setMode(mode, btn)
-    CurrentMode = mode
-    btnHead.BackgroundColor3 = Cores.BotaoOff
-    btnBackF.BackgroundColor3 = Cores.BotaoOff
-    btnBackT.BackgroundColor3 = Cores.BotaoOff
-    btn.BackgroundColor3 = Cores.BotaoOn
-end
-
-btnHead.MouseButton1Click:Connect(function() setMode("Head", btnHead) end)
-btnBackF.MouseButton1Click:Connect(function() setMode("BackFront", btnBackF) end)
-btnBackT.MouseButton1Click:Connect(function() setMode("BackBack", btnBackT) end)
 
 local function updateList(filter)
     for _, v in pairs(Scroll:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
@@ -199,43 +197,60 @@ end
 SearchBox:GetPropertyChangedSignal("Text"):Connect(function() updateList(SearchBox.Text) end)
 updateList("")
 
+-- FUNÇÃO PARA PARAR DE SEGUIR SEGURO
+local function detach()
+    IsFollowing = false
+    local char = LocalPlayer.Character
+    if char then
+        char.Humanoid.Sit = false
+        for _, p in pairs(char:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = true end end
+        -- Teleporta um pouco pra cima pra não cair
+        char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame * CFrame.new(0, 3, 0)
+    end
+    ActionBtn.Text = "SELECIONAR ALVO"
+    ActionBtn.BackgroundColor3 = Cores.BotaoOff
+    SelectedPlayer = nil
+end
+
 ActionBtn.MouseButton1Click:Connect(function()
     if SelectedPlayer then
         IsFollowing = not IsFollowing
         if not IsFollowing then
-            local myChar = LocalPlayer.Character
-            if myChar then
-                myChar.Humanoid.Sit = false
-                for _, p in pairs(myChar:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = true end end
-                myChar.HumanoidRootPart.CFrame = myChar.HumanoidRootPart.CFrame * CFrame.new(0, 3, 2)
-            end
-            ActionBtn.Text = "GRUDAR EM: " .. SelectedPlayer.DisplayName:upper()
-            ActionBtn.BackgroundColor3 = Cores.BotaoOn
+            detach()
         else
             ActionBtn.Text = "PARAR"
             ActionBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+            stopAnims()
         end
     end
 end)
 
+-- LOOP PRINCIPAL COM PROTEÇÃO ANTI-VOID
 RunService.Stepped:Connect(function()
-    if IsFollowing and SelectedPlayer and SelectedPlayer.Character then
+    if IsFollowing then
+        -- VERIFICAÇÃO SE O JOGADOR AINDA EXISTE E TEM PERSONAGEM
+        if not SelectedPlayer or not SelectedPlayer.Parent or not SelectedPlayer.Character or not SelectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            detach() -- Se ele saiu ou morreu, solta automaticamente
+            return
+        end
+
         local myChar = LocalPlayer.Character
         local targetChar = SelectedPlayer.Character
-        if myChar and myChar:FindFirstChild("HumanoidRootPart") and targetChar:FindFirstChild("HumanoidRootPart") then
-            for _, p in pairs(myChar:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
-            myChar.Humanoid.Sit = true
-            myChar.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
-            
-            local torso = targetChar:FindFirstChild("UpperTorso") or targetChar:FindFirstChild("Torso")
-            local head = targetChar:FindFirstChild("Head")
+        local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+        local tTorso = targetChar:FindFirstChild("UpperTorso") or targetChar:FindFirstChild("Torso")
+        local tHead = targetChar:FindFirstChild("Head")
 
-            if CurrentMode == "Head" and head then
-                myChar.HumanoidRootPart.CFrame = head.CFrame * CFrame.new(0, 1.1, 0)
-            elseif CurrentMode == "BackFront" and torso then
-                myChar.HumanoidRootPart.CFrame = torso.CFrame:ToWorldSpace(CFrame.new(0, 0.5, 0.7))
-            elseif CurrentMode == "BackBack" and torso then
-                myChar.HumanoidRootPart.CFrame = torso.CFrame:ToWorldSpace(CFrame.new(0, 0.5, 0.7) * CFrame.Angles(0, math.rad(180), 0))
+        if myRoot and (tTorso or tHead) then
+            for _, p in pairs(myChar:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+            myRoot.Velocity = Vector3.new(0,0,0)
+            stopAnims()
+
+            if CurrentMode == "Head" and tHead then
+                myRoot.CFrame = tHead.CFrame * CFrame.new(0, 1.2, 0)
+            elseif CurrentMode == "BackFront" and tTorso then
+                myRoot.CFrame = tTorso.CFrame * CFrame.new(0, 0.5, 0.7)
+            elseif CurrentMode == "BackBack" and tTorso then
+                myRoot.CFrame = tTorso.CFrame * CFrame.new(0, 0.5, 0.7) * CFrame.Angles(0, math.rad(180), 0)
             end
         end
     end

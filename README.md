@@ -1,0 +1,1 @@
+# sentar.script.bycybernodry
